@@ -1,0 +1,62 @@
+#include <lcom/lcf.h>
+
+int sys_inb(int port, u32_t *byte);
+int sys_outb(int port, u32_t byte);
+
+---------------------------------------------
+
+
+sys_irqsetpolicy(int irq_line, int policy, int *hook_id)
+    This function should be used to subscribe a notification on every interrupt in the input irq_line. The policy argument specifies whether or not the interrupt on that IRQ line should be automatically enabled by the generic interrupt handler, or whether the device driver interrupt handler will do it. Finally, the hook_id argument is used both for input to the call and output from the call. The caller should initialize it with a value that will be used in the interrupt notifications, as described below. The value returned by the call in this argument must be used in the other calls to specify the interrupt notification to operate on.
+
+int sys_irqrmpolicy(int *hook_id);
+    This function unsubscribes a previous subscription of the interrupt notification associated with the specified hook_id (this is the value returned by sys_irqsetpolicy() in its hook_id argument)
+
+int sys_irqenable(int *hook_id)
+    This function enables interrupts on the IRQ line associated with the specified hook_id (this is the value returned by sys_irqsetpolicy() in its hook_id argument). This may be convenient if the policy specified in the sys_irqsetpolicy() call does not enable interrupts automatically.
+
+int sys_irqdisable(int *hook_id)
+    This function disables interrupts on the IRQ line associated with the specified hook_id (this is the value returned by sys_irqsetpolicy() in its hook_id argument).
+
+--------------------------------------------
+
+ 1: #include <lcom/lcf.h>
+ 2: 
+ 3: int ipc_status;
+ 4: message msg;
+ 5:
+ 6: while( 1 ) { /* You may want to use a different condition */
+ 7:    /* Get a request message. */
+ 8:    if ( (r = driver_receive(ANY, &msg, &ipc_status)) != 0 ) { 
+ 9:        printf("driver_receive failed with: %d", r);
+10:        continue;
+11:    }
+12:    if (is_ipc_notify(ipc_status)) { /* received notification */
+13:        switch (_ENDPOINT_P(msg.m_source)) {
+14:            case HARDWARE: /* hardware interrupt notification */				
+15:                if (msg.m_notify.interrupts & irq_set) { /* subscribed interrupt */
+16:                    ...   /* process it */
+17:                }
+18:                break;
+19:            default:
+20:                break; /* no other notifications expected: do nothing */	
+21:        }
+22:    } else { /* received a standard message, not a notification */
+23:        /* no standard messages expected: do nothing */
+24:    }
+25: }
+
+---------------------------------------------
+
+
+LCOM Frame Work 
+
+#include <lcom/lcf.h>
+	
+int lcf_start(int argc, char *argv[]);
+int lcf_cleanup();
+
+----------------------------------------------
+
+
+
