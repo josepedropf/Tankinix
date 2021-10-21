@@ -1,6 +1,6 @@
 # LCOM Project
 
-LCOM Project for group T5G5;.
+LCOM Project for group T5G5.
 
 Group members:
 
